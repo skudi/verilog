@@ -1,0 +1,5 @@
+DCM_SP:
+	CLKn outputs are the same frequency as the input, 
+	CLK2X is 2x, 
+	CLKDV is input frequency/CLKDV_DIVIDE
+	CLKFX is input frequency*CLKFX_MULTIPLY/CLKFX_DIVIDE
