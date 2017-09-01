@@ -4,6 +4,7 @@ module shifter(clk, write, reset, data, out, negout, empty);
 
   parameter WIDTH = 8;
 	parameter DIFFERANTIAL = 0;
+	parameter LSB = 0;
 
 	input clk, write, reset;
 	input [WIDTH -1: 0] data;
@@ -13,23 +14,25 @@ module shifter(clk, write, reset, data, out, negout, empty);
 
 	wire clk, write, reset;
 	wire [WIDTH -1: 0] data;
-	wire out, negout;
-
-	if (DIFFERANTIAL) begin
-		assign negout = !buffer[0];
-	end
-
+	wire out;
+	wire negout;
 	wire empty;
 
 	//buffer = data bits + output bit
 	reg [WIDTH : 0] buffer;
 	reg [$clog2(WIDTH+1) : 0] position;
 
-	assign out = buffer[0];
+	if (LSB) assign out = buffer[0];
+	else assign out = buffer[WIDTH];
+
+	if (DIFFERANTIAL) begin
+		if (LSB) assign negout = !buffer[0];
+		else assign negout = !buffer[WIDTH];
+	end
 
 	assign empty = !position;
 
-	always @reset
+	always @reset begin
 		if (reset) begin
 			assign buffer = 0;
 			assign position = 0;
@@ -37,17 +40,20 @@ module shifter(clk, write, reset, data, out, negout, empty);
 			deassign buffer;
 			deassign position;
 		end
+	end
 
 	always @(posedge clk) begin
 		if (position) begin
-			buffer <= buffer >> 1;
+			if (LSB) buffer <= buffer >> 1;
+			else buffer <= buffer << 1;
 			position <= position -1;
 		end
 	end
 
 	always @(posedge write) begin
 		position <= WIDTH;
-		buffer[WIDTH:1] <= data;
+		if (LSB) buffer[WIDTH:1] <= data;
+		else buffer[WIDTH-1:0] <= data;
 	end
 
 endmodule
