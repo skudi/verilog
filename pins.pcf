@@ -1,2 +1,3 @@
 set_io clk 11
 set_io led 12
+set_io res 13
